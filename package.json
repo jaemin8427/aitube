@@ -1,0 +1,9 @@
+{
+  "name": "zeroone-launcher-mock",
+  "private": true,
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "serve .",
+    "start": "serve ."
+  }
+}

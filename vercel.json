@@ -1,0 +1,19 @@
+{
+  "cleanUrls": true,
+  "crons": [
+    {
+      "path": "/api/discover",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/admin",
+      "destination": "/admin.html"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

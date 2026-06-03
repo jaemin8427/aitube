@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PULSE PC Growth · Admin Review</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: rgba(15, 23, 38, 0.88);
+        --line: rgba(255,255,255,0.08);
+        --text: #eef4ff;
+        --muted: #9eb0c9;
+        --blue: #4aa8ff;
+        --green: #62db9d;
+        --red: #ff8b8b;
+        --yellow: #ffd267;
+      }
+      * { box-sizing: border-box; }
+      body { margin:0; font-family:Inter, Pretendard, system-ui, sans-serif; color:var(--text);
+        background: radial-gradient(circle at 12% 12%, rgba(74,168,255,0.18), transparent 20%), radial-gradient(circle at 88% 16%, rgba(86,232,255,0.09), transparent 18%), linear-gradient(180deg, #162033 0%, #0f1727 44%, #09111c 100%);
+      }
+      .page { width:min(1480px, calc(100vw - 32px)); margin:0 auto; padding:28px 0 34px; }
+      .hero { display:flex; justify-content:space-between; gap:16px; align-items:flex-end; margin-bottom:18px; }
+      .pill, .stat { display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,0.05); font-size:12px; font-weight:800; color:#dbe8ff; }
+      h1 { margin:10px 0 8px; font-size:40px; }
+      .desc, .muted { color:var(--muted); }
+      .toolbar, .stats, .review-layout, .lists-grid { display:grid; gap:14px; }
+      .toolbar { grid-template-columns: 1.2fr 1fr; margin-bottom:18px; }
+      .panel { border-radius:24px; background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(14px); box-shadow:0 26px 80px rgba(0,0,0,0.24); padding:18px; }
+      .controls { display:flex; gap:10px; flex-wrap:wrap; margin-top:12px; }
+      .manual-add-box { margin-top:14px; padding:14px; border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,0.03); display:grid; gap:10px; }
+      .manual-add-row { display:grid; grid-template-columns: minmax(0, 1fr) 180px 130px; gap:10px; }
+      .input, .select { width:100%; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,0.04); color:var(--text); padding:11px 12px; font:inherit; }
+      .btn { border:1px solid var(--line); background:rgba(255,255,255,0.04); color:var(--text); padding:11px 14px; border-radius:14px; cursor:pointer; font:inherit; }
+      .btn.primary { background:rgba(74,168,255,0.16); border-color:rgba(74,168,255,0.28); }
+      .btn.green { background:rgba(98,219,157,0.14); border-color:rgba(98,219,157,0.28); }
+      .btn.red { background:rgba(255,139,139,0.12); border-color:rgba(255,139,139,0.24); }
+      .btn.yellow { background:rgba(255,210,103,0.12); border-color:rgba(255,210,103,0.24); }
+      .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .stat-card { border-radius:18px; border:1px solid var(--line); background:rgba(255,255,255,0.03); padding:14px; }
+      .stat-card strong { display:block; margin-top:8px; font-size:22px; }
+      .review-layout { grid-template-columns: minmax(420px, 0.95fr) minmax(0, 1.05fr); margin-bottom:18px; align-items:start; }
+      .filter-tabs { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:18px; }
+      .filter-tab { padding:9px 12px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,0.04); color:var(--text); cursor:pointer; font:inherit; }
+      .filter-tab.active { background:rgba(74,168,255,0.16); border-color:rgba(74,168,255,0.28); }
+      .preview-frame { width:100%; aspect-ratio:16/9; border:0; border-radius:18px; background:#000; }
+      .preview-box.compact .preview-frame { display:none; }
+      .preview-box.compact .preview-meta { min-height:160px; display:flex; flex-direction:column; justify-content:center; }
+      .preview-meta h2 { margin:14px 0 8px; font-size:24px; line-height:1.4; }
+      .preview-meta p { margin:0; color:var(--muted); line-height:1.7; }
+      .tag-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+      .tag { padding:6px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,0.04); font-size:11px; }
+      .preview-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+      .lists-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items:start; }
+      .section-head { display:flex; justify-content:space-between; gap:12px; align-items:center; margin-bottom:12px; }
+      .section-head h2 { margin:0; font-size:18px; }
+      .list { display:grid; gap:12px; max-height:72vh; overflow:auto; }
+      .card { border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,0.04); padding:12px; display:grid; gap:10px; cursor:pointer; }
+      .card.active { border-color:rgba(74,168,255,0.28); background:rgba(74,168,255,0.08); }
+      .thumb { width:100%; aspect-ratio:16/9; object-fit:cover; border-radius:12px; background:#111; }
+      .card h3 { margin:0; font-size:15px; line-height:1.5; }
+      .card p { margin:0; color:var(--muted); font-size:12px; line-height:1.55; }
+      .card-actions { display:flex; gap:8px; flex-wrap:wrap; }
+      .log { white-space:pre-wrap; color:var(--muted); font-size:12px; line-height:1.6; min-height:44px; }
+      .top-links { display:flex; gap:8px; flex-wrap:wrap; }
+      a.inline { color:#9fd7ff; text-decoration:none; }
+      @media (max-width: 1280px) { .toolbar, .review-layout, .lists-grid, .stats { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="hero">
+        <div>
+          <div class="pill">PULSE PC · NXI Admin Review</div>
+          <h1>AI 콘텐츠 카테고리 관리자 검수</h1>
+          <p class="desc">NXI 트렌드 분석 기준 Core Category(입문/업무/학습/시니어)와 Expansion(취미형/수익화) 구조로 자동 수집 → 검수 → 승인 노출까지 관리.</p>
+        </div>
+        <div class="top-links">
+          <a class="stat inline" href="/youtube">사용자 페이지 보기</a>
+          <a class="stat inline" href="/">메인으로</a>
+        </div>
+      </section>
+
+      <section class="toolbar">
+        <div class="panel">
+          <strong>자동 수집 컨트롤</strong>
+          <p class="muted">NXI 카테고리 체계 기준으로 유튜브 후보 영상을 한 번에 수집해서 수집함으로 넣는다. 이후 사람 검수로 승인/반려.</p>
+          <div class="log">현재 수집 방식: 카테고리별 검색어 묶음으로 유튜브 후보 영상을 대량 수집한 뒤, 제목·키워드 적합도로 1차 점수화해서 관리자 검수함에 올리는 구조</div>
+          <div class="controls">
+            <button class="btn primary" id="discoverBtn" type="button">전체 카테고리 수집</button>
+            <button class="btn" id="mergeBtn" type="button">수집 결과 수집함에 반영</button>
+            <button class="btn yellow" id="exportBtn" type="button">승인 목록 JSON 내보내기</button>
+            <button class="btn red" id="resetBtn" type="button">검수 데이터 초기화</button>
+          </div>
+          <div class="manual-add-box">
+            <strong>수동 URL 추가</strong>
+            <div class="manual-add-row">
+              <input class="input" id="manualUrlInput" placeholder="유튜브 URL만 붙여넣기" />
+              <select class="select" id="manualCategorySelect">
+                <option value="intro">입문</option>
+                <option value="work">업무</option>
+                <option value="study">학습</option>
+                <option value="senior">시니어</option>
+                <option value="hobby">취미형</option>
+                <option value="monetize">수익화</option>
+              </select>
+              <button class="btn primary" id="manualAddBtn" type="button">리스트 추가</button>
+            </div>
+            <div class="muted">URL만 넣으면 제목/썸네일/채널을 읽어서 선택한 카테고리의 수집함에 바로 추가</div>
+          </div>
+          <div class="log" id="logBox">아직 수집 전</div>
+        </div>
+
+        <div class="panel stats" id="statsGrid"></div>
+      </section>
+
+      <section class="review-layout">
+        <div class="panel preview-box compact" id="previewBox">
+          <iframe class="preview-frame" id="previewFrame" src="" title="admin preview" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+          <div class="preview-meta">
+            <h2 id="previewTitle">검수할 영상을 선택해줘</h2>
+            <p id="previewChannel">수집함 / 승인됨 / 반려됨 리스트에서 카드를 클릭하면 여기서 바로 영상 확인 가능.</p>
+            <div class="tag-row">
+              <span class="tag" id="previewCategory">카테고리</span>
+              <span class="tag" id="previewGroup">구조</span>
+              <span class="tag" id="previewScore">점수</span>
+              <a class="tag inline" id="previewLink" href="#" target="_blank" rel="noreferrer">유튜브 열기</a>
+            </div>
+            <div class="preview-actions" id="previewActions"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="section-head"><h2>검수 가이드</h2><span class="muted">페이지 안에서 바로 확인</span></div>
+          <div class="log">1) 수집함 카드 클릭
+2) 좌측(모바일에서는 상단) 플레이어에서 바로 영상 확인
+3) 승인 / 반려 / 다시 검토 처리
+4) 승인된 영상만 사용자 페이지에 노출
+
+지금부터는 썸네일만 보는 구조가 아니라, 검수 페이지 안에서 바로 영상 내용을 확인할 수 있게 바꿔둠.</div>
+        </div>
+      </section>
+
+      <section class="filter-tabs" id="filterTabs"></section>
+
+      <section class="lists-grid">
+        <div class="panel">
+          <div class="section-head"><h2>수집함</h2><span class="muted" id="pendingCount">0건</span></div>
+          <div class="list" id="pendingList"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h2>승인됨</h2><span class="muted" id="approvedCount">0건</span></div>
+          <div class="list" id="approvedList"></div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h2>반려됨</h2><span class="muted" id="rejectedCount">0건</span></div>
+          <div class="list" id="rejectedList"></div>
+        </div>
+      </section>
+    </div>
+
+    <script src="/assets/approved-seed.js"></script>
+    <script>
+      const STORAGE_KEY = 'pulse-pc-growth-review-store-v1';
+      const LAST_DISCOVERY_KEY = 'pulse-pc-growth-last-discovery-v1';
+
+      const logBox = document.getElementById('logBox');
+      const pendingList = document.getElementById('pendingList');
+      const approvedList = document.getElementById('approvedList');
+      const rejectedList = document.getElementById('rejectedList');
+      const pendingCount = document.getElementById('pendingCount');
+      const approvedCount = document.getElementById('approvedCount');
+      const rejectedCount = document.getElementById('rejectedCount');
+      const statsGrid = document.getElementById('statsGrid');
+      const filterTabs = document.getElementById('filterTabs');
+      const previewBox = document.getElementById('previewBox');
+      const previewFrame = document.getElementById('previewFrame');
+      const previewTitle = document.getElementById('previewTitle');
+      const previewChannel = document.getElementById('previewChannel');
+      const previewCategory = document.getElementById('previewCategory');
+      const previewGroup = document.getElementById('previewGroup');
+      const previewScore = document.getElementById('previewScore');
+      const previewLink = document.getElementById('previewLink');
+      const previewActions = document.getElementById('previewActions');
+      const manualUrlInput = document.getElementById('manualUrlInput');
+      const manualCategorySelect = document.getElementById('manualCategorySelect');
+      const manualAddBtn = document.getElementById('manualAddBtn');
+
+      const categoryFilters = [
+        { key: 'all', label: '전체' },
+        { key: 'intro', label: '입문' },
+        { key: 'work', label: '업무' },
+        { key: 'study', label: '학습' },
+        { key: 'senior', label: '시니어' },
+        { key: 'hobby', label: '취미형' },
+        { key: 'monetize', label: '수익화' }
+      ];
+
+      let selectedId = null;
+      let selectedMode = 'pending';
+      let activeFilter = 'all';
+
+      function getDefaultStore() {
+        const approvedSeed = (window.SEED_APPROVED_VIDEOS || []).filter(item => !item.seedOnly);
+        return { pending: [], approved: approvedSeed, rejected: [], updatedAt: null };
+      }
+
+      function loadStore() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (!raw) return getDefaultStore();
+          const parsed = JSON.parse(raw);
+          return {
+            pending: parsed.pending || [],
+            approved: parsed.approved || [],
+            rejected: parsed.rejected || [],
+            updatedAt: parsed.updatedAt || null
+          };
+        } catch {
+          return getDefaultStore();
+        }
+      }
+
+      function saveStore(store) {
+        store.updatedAt = new Date().toISOString();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+      }
+
+      function loadDiscoveryCache() {
+        try { return JSON.parse(localStorage.getItem(LAST_DISCOVERY_KEY) || '[]'); } catch { return []; }
+      }
+
+      function saveDiscoveryCache(items) {
+        localStorage.setItem(LAST_DISCOVERY_KEY, JSON.stringify(items));
+      }
+
+      function dedupe(items) {
+        const map = new Map();
+        items.forEach(item => {
+          const key = item.id || item.url;
+          if (!map.has(key)) map.set(key, item);
+        });
+        return [...map.values()];
+      }
+
+      function setEmptyPreview() {
+        previewBox.classList.add('compact');
+        previewFrame.src = '';
+        previewTitle.textContent = '검수할 영상을 선택해줘';
+        previewChannel.textContent = '수집함 / 승인됨 / 반려됨 리스트에서 카드를 클릭하면 여기서 바로 영상 확인 가능.';
+        previewCategory.textContent = '카테고리';
+        previewGroup.textContent = '구조';
+        previewScore.textContent = '점수';
+        previewLink.href = '#';
+        previewActions.innerHTML = '';
+      }
+
+      function renderFilterTabs() {
+        filterTabs.innerHTML = categoryFilters.map(item => `
+          <button class="filter-tab ${activeFilter === item.key ? 'active' : ''}" data-filter-key="${item.key}" type="button">${item.label}</button>
+        `).join('');
+
+        filterTabs.querySelectorAll('[data-filter-key]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            activeFilter = btn.dataset.filterKey;
+            render();
+          });
+        });
+      }
+
+      function filterByCategory(items) {
+        if (activeFilter === 'all') return items;
+        return items.filter(item => item.category === activeFilter);
+      }
+
+      function renderStats(store) {
+        statsGrid.innerHTML = `
+          <article class="stat-card"><div class="muted">수집함</div><strong>${store.pending.length}</strong></article>
+          <article class="stat-card"><div class="muted">승인됨</div><strong>${store.approved.length}</strong></article>
+          <article class="stat-card"><div class="muted">반려됨</div><strong>${store.rejected.length}</strong></article>
+          <article class="stat-card"><div class="muted">마지막 업데이트</div><strong style="font-size:14px">${store.updatedAt ? new Date(store.updatedAt).toLocaleString('ko-KR') : '없음'}</strong></article>
+        `;
+      }
+
+      function actionButtons(mode, item) {
+        if (mode === 'pending') {
+          return `
+            <button class="btn green" data-action="approve" data-id="${item.id}">승인</button>
+            <button class="btn red" data-action="reject" data-id="${item.id}">반려</button>
+          `;
+        }
+        if (mode === 'approved') {
+          return `
+            <button class="btn yellow" data-action="to-pending" data-id="${item.id}">다시 검토</button>
+            <button class="btn red" data-action="reject" data-id="${item.id}">반려 이동</button>
+          `;
+        }
+        return `
+          <button class="btn yellow" data-action="to-pending" data-id="${item.id}">재검토</button>
+          <button class="btn green" data-action="approve" data-id="${item.id}">바로 승인</button>
+        `;
+      }
+
+      function cardTemplate(item, mode) {
+        return `
+          <article class="card ${selectedId === item.id ? 'active' : ''}" data-select-id="${item.id}" data-select-mode="${mode}">
+            <img class="thumb" src="${item.thumbnail}" alt="${item.title}" loading="lazy" />
+            <div class="tag-row">
+              <span class="tag">${item.categoryLabel || item.category}</span>
+              <span class="tag">${item.categoryGroup || 'Custom'}</span>
+              <span class="tag">점수 ${item.score ?? 0}</span>
+              <a class="tag inline" href="${item.url}" target="_blank" rel="noreferrer">유튜브 열기</a>
+            </div>
+            <h3>${item.title}</h3>
+            <p>${item.channel}</p>
+            <div class="card-actions">${actionButtons(mode, item)}</div>
+          </article>
+        `;
+      }
+
+      function applyAction(action, id) {
+        const store = loadStore();
+        const pull = (list) => {
+          const idx = list.findIndex(item => item.id === id);
+          if (idx === -1) return null;
+          const [item] = list.splice(idx, 1);
+          return item;
+        };
+
+        let item = pull(store.pending) || pull(store.approved) || pull(store.rejected);
+        if (!item) return;
+
+        if (action === 'approve') {
+          item.approvedAt = new Date().toISOString();
+          delete item.rejectedAt;
+          store.approved.unshift(item);
+          selectedMode = 'approved';
+        } else if (action === 'reject') {
+          item.rejectedAt = new Date().toISOString();
+          delete item.approvedAt;
+          store.rejected.unshift(item);
+          selectedMode = 'rejected';
+        } else if (action === 'to-pending') {
+          delete item.approvedAt;
+          delete item.rejectedAt;
+          store.pending.unshift(item);
+          selectedMode = 'pending';
+        }
+
+        selectedId = item.id;
+        saveStore(store);
+        render();
+      }
+
+      function findSelectedItem(store) {
+        const collections = {
+          pending: filterByCategory(store.pending),
+          approved: filterByCategory(store.approved),
+          rejected: filterByCategory(store.rejected)
+        };
+        const item = (collections[selectedMode] || []).find(x => x.id === selectedId)
+          || store.pending.find(x => x.id === selectedId)
+          || store.approved.find(x => x.id === selectedId)
+          || store.rejected.find(x => x.id === selectedId);
+        return item || null;
+      }
+
+      function renderPreview(store) {
+        const item = findSelectedItem(store);
+        if (!item) {
+          setEmptyPreview();
+          return;
+        }
+        previewBox.classList.remove('compact');
+        previewFrame.src = `${item.embedUrl}?rel=0`;
+        previewTitle.textContent = item.title;
+        previewChannel.textContent = item.channel;
+        previewCategory.textContent = item.categoryLabel || item.category;
+        previewGroup.textContent = item.categoryGroup || 'Custom';
+        previewScore.textContent = `점수 ${item.score ?? 0}`;
+        previewLink.href = item.url;
+        previewActions.innerHTML = actionButtons(selectedMode, item);
+      }
+
+      function bindActions() {
+        document.querySelectorAll('[data-action]').forEach(btn => {
+          btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            applyAction(btn.dataset.action, btn.dataset.id);
+          });
+        });
+
+        document.querySelectorAll('[data-select-id]').forEach(card => {
+          card.addEventListener('click', (event) => {
+            if (event.target.closest('[data-action]') || event.target.closest('a')) return;
+            selectedId = card.dataset.selectId;
+            selectedMode = card.dataset.selectMode;
+            render();
+          });
+        });
+      }
+
+      function renderLists(store) {
+        const filteredPending = filterByCategory(store.pending);
+        const filteredApproved = filterByCategory(store.approved);
+        const filteredRejected = filterByCategory(store.rejected);
+
+        pendingCount.textContent = `${filteredPending.length}건`;
+        approvedCount.textContent = `${filteredApproved.length}건`;
+        rejectedCount.textContent = `${filteredRejected.length}건`;
+
+        pendingList.innerHTML = filteredPending.length ? filteredPending.map(item => cardTemplate(item, 'pending')).join('') : '<div class="muted">해당 카테고리 수집함이 비어 있음</div>';
+        approvedList.innerHTML = filteredApproved.length ? filteredApproved.map(item => cardTemplate(item, 'approved')).join('') : '<div class="muted">해당 카테고리 승인 영상 없음</div>';
+        rejectedList.innerHTML = filteredRejected.length ? filteredRejected.map(item => cardTemplate(item, 'rejected')).join('') : '<div class="muted">해당 카테고리 반려 영상 없음</div>';
+
+        bindActions();
+      }
+
+      function ensureSelection(store) {
+        const exists = findSelectedItem(store);
+        if (exists) return;
+        const filteredPending = filterByCategory(store.pending);
+        const filteredApproved = filterByCategory(store.approved);
+        const filteredRejected = filterByCategory(store.rejected);
+        const first = filteredPending[0] || filteredApproved[0] || filteredRejected[0] || null;
+        if (!first) {
+          selectedId = null;
+          selectedMode = 'pending';
+          return;
+        }
+        selectedId = first.id;
+        selectedMode = filteredPending.find(x => x.id === first.id) ? 'pending' : filteredApproved.find(x => x.id === first.id) ? 'approved' : 'rejected';
+      }
+
+      function render() {
+        const store = loadStore();
+        ensureSelection(store);
+        renderFilterTabs();
+        renderStats(store);
+        renderPreview(store);
+        renderLists(store);
+      }
+
+      document.getElementById('discoverBtn').addEventListener('click', async () => {
+        logBox.textContent = '전체 카테고리 수집 중...';
+        try {
+          const res = await fetch('/api/discover');
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'discover_failed');
+          saveDiscoveryCache(data.items || []);
+          logBox.textContent = `수집 완료\n- 카테고리 ${data.categoryCount}개\n- 영상 ${data.count}개\n- 시각 ${new Date(data.fetchedAt).toLocaleString('ko-KR')}\n\n이제 '수집 결과 수집함에 반영' 누르면 검수함으로 들어감.`;
+        } catch (error) {
+          logBox.textContent = `수집 실패: ${error.message}`;
+        }
+      });
+
+      document.getElementById('mergeBtn').addEventListener('click', () => {
+        const discovered = loadDiscoveryCache();
+        const store = loadStore();
+        const existingIds = new Set([...store.pending, ...store.approved, ...store.rejected].map(item => item.id));
+        const additions = discovered.filter(item => !existingIds.has(item.id));
+        store.pending = dedupe([...additions, ...store.pending]);
+        saveStore(store);
+        logBox.textContent = `수집함 반영 완료\n- 신규 추가 ${additions.length}건\n- 전체 수집함 ${store.pending.length}건`;
+        render();
+      });
+
+      manualAddBtn.addEventListener('click', async () => {
+        const url = manualUrlInput.value.trim();
+        const category = manualCategorySelect.value;
+        if (!url) {
+          logBox.textContent = '수동 추가 실패: 유튜브 URL을 넣어줘';
+          return;
+        }
+
+        try {
+          const res = await fetch('/api/manual-add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url, category })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'manual_add_failed');
+
+          const store = loadStore();
+          const exists = [...store.pending, ...store.approved, ...store.rejected].some(item => item.id === data.item.id);
+          if (exists) {
+            logBox.textContent = `이미 등록된 영상: ${data.item.title}`;
+            return;
+          }
+
+          store.pending.unshift(data.item);
+          saveStore(store);
+          selectedId = data.item.id;
+          selectedMode = 'pending';
+          manualUrlInput.value = '';
+          activeFilter = data.item.category || 'all';
+          logBox.textContent = `수동 추가 완료\n- ${data.item.title}\n- 카테고리 ${data.item.categoryLabel}`;
+          render();
+        } catch (error) {
+          logBox.textContent = `수동 추가 실패: ${error.message}`;
+        }
+      });
+
+      document.getElementById('exportBtn').addEventListener('click', () => {
+        const store = loadStore();
+        const blob = new Blob([JSON.stringify(store.approved, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'pulse-approved-videos.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        if (!confirm('정말 검수 데이터를 초기화할까?')) return;
+        localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(LAST_DISCOVERY_KEY);
+        selectedId = null;
+        selectedMode = 'pending';
+        logBox.textContent = '검수 데이터 초기화 완료';
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

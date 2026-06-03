@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PULSE PC Growth · AI 교육 콘텐츠</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: rgba(15, 23, 38, 0.88);
+        --panel-2: rgba(255,255,255,0.04);
+        --line: rgba(255,255,255,0.08);
+        --text: #eef4ff;
+        --muted: #9eb0c9;
+        --blue: #4aa8ff;
+        --cyan: #56e8ff;
+        --green: #62db9d;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, Pretendard, system-ui, sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 12% 12%, rgba(74,168,255,0.18), transparent 20%),
+          radial-gradient(circle at 88% 16%, rgba(86,232,255,0.09), transparent 18%),
+          linear-gradient(180deg, #162033 0%, #0f1727 44%, #09111c 100%);
+        min-height: 100vh;
+      }
+      .page { width:min(1380px, calc(100vw - 32px)); margin:0 auto; padding:14px 0 18px; }
+      .hero { display:grid; gap:6px; margin-bottom:8px; }
+      .pill {
+        display:inline-flex; align-items:center; gap:8px; padding:7px 12px; border-radius:999px;
+        border:1px solid var(--line); background:rgba(255,255,255,0.05); font-size:12px; font-weight:800; color:#dbe8ff;
+      }
+      h1 { margin:0; font-size:30px; line-height:1.02; }
+      .desc { margin:0; color:var(--muted); line-height:1.45; font-size:13px; }
+      .layout { display:grid; grid-template-columns: 300px minmax(0, 1fr); gap:12px; align-items:start; }
+      .panel {
+        border-radius:24px; background:var(--panel); border:1px solid var(--line);
+        backdrop-filter:blur(14px); box-shadow:0 26px 80px rgba(0,0,0,0.24);
+      }
+      .sidebar { padding:14px; display:grid; gap:10px; align-content:start; }
+      .section-title { margin:0; font-size:15px; }
+      .category-list { display:grid; gap:10px; }
+      .category-btn, .search-btn, .mode-btn {
+        width:100%; text-align:left; border:1px solid var(--line); background:rgba(255,255,255,0.04); color:var(--text);
+        padding:11px 12px; border-radius:16px; cursor:pointer; font:inherit;
+      }
+      .category-btn.active, .mode-btn.active { background:linear-gradient(135deg, rgba(74,168,255,0.16), rgba(86,232,255,0.08)); border-color:rgba(74,168,255,0.24); }
+      .category-btn strong { display:block; font-size:15px; margin-bottom:4px; }
+      .category-btn span { display:block; color:var(--muted); font-size:12px; line-height:1.5; }
+      .search-box, .mode-box { display:grid; gap:8px; }
+      .search-input {
+        width:100%; border-radius:14px; border:1px solid var(--line); background:rgba(255,255,255,0.04);
+        color:var(--text); padding:12px 14px; font:inherit;
+      }
+      .search-btn { text-align:center; font-weight:800; }
+      .content { padding:8px; display:grid; gap:8px; background:transparent; border:none; box-shadow:none; align-content:start; height:auto; min-height:0; }
+      .toolbar { display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap; padding:2px 2px 6px; }
+      .status { color:var(--muted); font-size:13px; }
+      .content-grid { display:grid; grid-template-columns: 1fr; gap:6px; align-items:start; height:auto; min-height:0; }
+      .results-panel { border:none; border-radius:0; background:transparent; padding:0; box-shadow:none; height:auto; min-height:0; }
+      .badge { padding:7px 10px; border-radius:999px; border:1px solid var(--line); background:rgba(255,255,255,0.04); font-size:12px; }
+      .results-list { display:grid; gap:8px; max-height:none; overflow:visible; align-content:start; }
+      .video-card {
+        display:grid; grid-template-columns: 180px minmax(0, 1fr); gap:12px; border:1px solid var(--line);
+        border-radius:18px; background:rgba(255,255,255,0.05); padding:12px; cursor:pointer;
+      }
+      .video-card.active { border-color:rgba(74,168,255,0.28); background:rgba(74,168,255,0.08); }
+      .thumb { width:100%; aspect-ratio: 16/9; object-fit:cover; border-radius:12px; background:#111; }
+      .video-card h3 { margin:0 0 6px; font-size:15px; line-height:1.4; }
+      .video-card p { margin:0; font-size:12px; color:var(--muted); line-height:1.55; }
+      .empty, .loading { padding:18px; border:1px dashed var(--line); border-radius:18px; color:var(--muted); text-align:center; background:rgba(255,255,255,0.03); }
+      .admin-box { border:1px solid var(--line); border-radius:18px; background:rgba(255,255,255,0.03); padding:14px; }
+      .admin-box ul { margin:8px 0 0; padding-left:18px; color:var(--muted); line-height:1.7; font-size:13px; }
+      a.inline-link { color:#9fd7ff; text-decoration:none; }
+      @media (max-width: 1100px) {
+        .layout, .content-grid { grid-template-columns: 1fr; }
+      }
+      @media (max-width: 720px) {
+        .page { width:min(100vw - 20px, 100%); padding-top:16px; }
+        h1 { font-size:28px; }
+        .video-card { grid-template-columns: 1fr; }
+        .content { padding:4px 0 0; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <section class="hero">
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <div class="pill">PULSE PC · NXI Category UI</div>
+        </div>
+        <h1>AI 콘텐츠 카테고리 탐색</h1>
+        <p class="desc">승인 영상 우선 노출 + 실시간 검색 결과 확인 구조</p>
+      </section>
+
+      <section class="layout">
+        <aside class="panel sidebar">
+          <div>
+            <h2 class="section-title">NXI 카테고리 구조</h2>
+          </div>
+          <div class="category-list" id="categoryList"></div>
+
+          <div class="mode-box">
+            <h2 class="section-title">노출 모드</h2>
+            <button class="mode-btn active" id="approvedModeBtn" type="button">승인된 영상만 보기</button>
+            <button class="mode-btn" id="liveModeBtn" type="button">실시간 검색 결과 보기</button>
+          </div>
+
+          <div class="search-box">
+            <h2 class="section-title">직접 검색</h2>
+            <input class="search-input" id="searchInput" placeholder="예: ChatGPT 업무자동화, AI 입문" />
+            <button class="search-btn" id="searchBtn" type="button">검색 실행</button>
+          </div>
+
+          <div class="admin-box">
+            <strong>관리자 검수 흐름</strong>
+            <ul>
+              <li><a class="inline-link" href="/admin">관리자 페이지</a>에서 자동 수집</li>
+              <li>사람이 승인 / 반려</li>
+              <li>승인된 영상만 여기서 노출</li>
+            </ul>
+          </div>
+        </aside>
+
+        <main class="content">
+          <div class="toolbar">
+            <div>
+              <div class="pill" id="activeLabel">AI 처음 시작하기</div>
+            </div>
+            <div class="status" id="statusText">승인된 영상 목록을 확인하는 중...</div>
+          </div>
+
+          <section class="content-grid">
+            <div class="results-panel">
+              <div class="results-list" id="resultsList">
+                <div class="loading">영상을 불러오는 중...</div>
+              </div>
+            </div>
+          </section>
+        </main>
+      </section>
+    </div>
+
+    <script src="/assets/approved-seed.js"></script>
+    <script>
+      const STORAGE_KEY = 'pulse-pc-growth-review-store-v1';
+      const categories = [
+        { key: 'intro', label: '입문', group: 'Core Category', desc: '기초 사용법, 가입 가이드, 첫 사용 경험 중심' },
+        { key: 'work', label: '업무', group: 'Core Category', desc: '직장인 실전형 생산성 향상, 업무 자동화 중심' },
+        { key: 'study', label: '학습', group: 'Core Category', desc: '학업, 과제 해결, 정보 검색, 공부 보조 활용' },
+        { key: 'senior', label: '시니어', group: 'Core Category', desc: '5060 눈높이 교육, 생활형 활용, 체험형 접근' },
+        { key: 'hobby', label: '취미형', group: 'Expansion', desc: '창작, 그림, 일상 대화, 생활 밀착형 활용 확장' },
+        { key: 'monetize', label: '수익화', group: 'Expansion', desc: '유튜브, 부업, 콘텐츠 제작, 경제적 가치 창출' }
+      ];
+
+      const categoryList = document.getElementById('categoryList');
+      const resultsList = document.getElementById('resultsList');
+      const statusText = document.getElementById('statusText');
+      const activeLabel = document.getElementById('activeLabel');
+      const searchInput = document.getElementById('searchInput');
+      const searchBtn = document.getElementById('searchBtn');
+      const videoCategoryBadge = { textContent: '' };
+      const approvedModeBtn = document.getElementById('approvedModeBtn');
+      const liveModeBtn = document.getElementById('liveModeBtn');
+
+      let activeCategory = 'intro';
+      let activeItems = [];
+      let activeVideoId = null;
+      let mode = 'approved';
+
+      function loadApprovedItems() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          const parsed = raw ? JSON.parse(raw) : null;
+          const approved = parsed?.approved?.length ? parsed.approved : [];
+          return approved.length ? approved : (window.SEED_APPROVED_VIDEOS || []);
+        } catch {
+          return window.SEED_APPROVED_VIDEOS || [];
+        }
+      }
+
+      function renderCategories() {
+        categoryList.innerHTML = categories.map(item => `
+          <button class="category-btn ${item.key === activeCategory ? 'active' : ''}" data-key="${item.key}" type="button">
+            <strong>${item.label}</strong>
+            <span>${item.group} · ${item.desc}</span>
+          </button>
+        `).join('');
+
+        categoryList.querySelectorAll('.category-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            activeCategory = btn.dataset.key;
+            const selected = categories.find(x => x.key === activeCategory);
+            activeLabel.textContent = selected?.label || '카테고리';
+            renderCategories();
+            if (mode === 'approved') {
+              loadApprovedByCategory();
+            } else {
+              loadVideos({ category: activeCategory });
+            }
+          });
+        });
+      }
+
+      function renderResults() {
+        if (!activeItems.length) {
+          resultsList.innerHTML = '<div class="empty">이 카테고리에 아직 승인된 영상이 없거나 검색 결과를 가져오지 못했어.</div>';
+          return;
+        }
+
+        resultsList.innerHTML = activeItems.map(item => `
+          <article class="video-card ${item.id === activeVideoId ? 'active' : ''}" data-id="${item.id}">
+            <img class="thumb" src="${item.thumbnail}" alt="${item.title}" loading="lazy" />
+            <div>
+              <h3>${item.title}</h3>
+              <p>${item.channel}</p>
+              <p>${item.categoryLabel || ''} · 점수 ${item.score ?? 0}</p>
+              <p><a class="inline-link" href="${item.url}" target="_blank" rel="noreferrer">유튜브에서 보기</a></p>
+            </div>
+          </article>
+        `).join('');
+
+        resultsList.querySelectorAll('.video-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const selected = activeItems.find(item => item.id === card.dataset.id);
+            if (selected) selectVideo(selected);
+          });
+        });
+      }
+
+      function selectVideo(item) {
+        activeVideoId = item.id;
+        window.open(item.url, '_blank', 'noopener,noreferrer');
+        renderResults();
+      }
+
+      function loadApprovedByCategory() {
+        const approved = loadApprovedItems();
+        activeItems = approved.filter(item => item.category === activeCategory);
+        statusText.textContent = `승인된 영상 ${activeItems.length}개`;
+        if (!activeItems.length) {
+          activeVideoId = null;
+          renderResults();
+        }
+        renderResults();
+      }
+
+      async function loadVideos({ category, q }) {
+        statusText.textContent = '영상 목록을 불러오는 중...';
+        resultsList.innerHTML = '<div class="loading">유튜브 결과를 찾는 중...</div>';
+        try {
+          const params = new URLSearchParams();
+          if (category) params.set('category', category);
+          if (q) params.set('q', q);
+          const res = await fetch(`/api/search?${params.toString()}`);
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || 'failed');
+          activeItems = data.items || [];
+          statusText.textContent = `실시간 검색 · ${data.query} · ${data.count}개 결과`;
+          if (!activeItems.length) {
+            activeVideoId = null;
+            renderResults();
+          }
+          renderResults();
+        } catch (error) {
+          activeItems = [];
+          activeVideoId = null;
+          statusText.textContent = `에러: ${error.message}`;
+          renderResults();
+        }
+      }
+
+      approvedModeBtn.addEventListener('click', () => {
+        mode = 'approved';
+        approvedModeBtn.classList.add('active');
+        liveModeBtn.classList.remove('active');
+        loadApprovedByCategory();
+      });
+
+      liveModeBtn.addEventListener('click', () => {
+        mode = 'live';
+        liveModeBtn.classList.add('active');
+        approvedModeBtn.classList.remove('active');
+        loadVideos({ category: activeCategory });
+      });
+
+      searchBtn.addEventListener('click', () => {
+        const q = searchInput.value.trim();
+        if (!q) return;
+        mode = 'live';
+        liveModeBtn.classList.add('active');
+        approvedModeBtn.classList.remove('active');
+        activeLabel.textContent = '직접 검색';
+        loadVideos({ q });
+      });
+
+      searchInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') searchBtn.click();
+      });
+
+      renderCategories();
+      activeLabel.textContent = categories[0].label;
+      loadApprovedByCategory();
+      window.addEventListener('storage', () => {
+        if (mode === 'approved') loadApprovedByCategory();
+      });
+    </script>
+  </body>
+</html>
